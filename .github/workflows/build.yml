@@ -1,0 +1,57 @@
+name: Build Jaeger Builder
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Build with Maven
+      run: |
+        cd jaeger-builder
+        mvn clean package -DskipTests
+        
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: jaeger-builder-jar
+        path: jaeger-builder/target/jaeger-builder-1.0.0.jar
+        
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v1.0.0
+        name: Jaeger Builder 3D v1.0.0
+        body: |
+          ## Download
+          
+          **Requires Java 21 or higher**
+          
+          Download the JAR file below and run:
+          ```bash
+          java -jar jaeger-builder-1.0.0.jar
+          ```
+          
+          ## Features
+          - Fusion & Fission reactor simulation
+          - Hydraulic muscle and actuator systems
+          - Supercomputer with neural interface
+          - F.R.I.D.A.Y. AI assistant
+          - Full mech construction system
+        files: jaeger-builder/target/jaeger-builder-1.0.0.jar
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
